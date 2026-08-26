@@ -1,0 +1,162 @@
+/* Destination Shop — admin
+ *
+ * Keep selectors scoped under .ds-* so WooCommerce product-data CSS
+ * (label { float; margin-left:-150px }) cannot smash the checklist.
+ */
+
+.ds-product-destinations {
+  padding: 12px 16px 16px;
+}
+
+.ds-ships-to {
+  max-width: 480px;
+}
+
+.ds-ships-to__title {
+  margin: 0 0 8px;
+  padding: 0;
+  font-size: 13px;
+  font-weight: 600;
+  float: none;
+  width: auto;
+}
+
+.ds-ships-to__help,
+.ds-ships-to__empty {
+  margin: 0 0 10px;
+  padding: 0;
+  color: #646970;
+  line-height: 1.45;
+}
+
+.ds-ships-to__empty a {
+  font-weight: 600;
+}
+
+.ds-product-destinations .ds-dest-filter {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  margin: 0 0 8px;
+  padding: 6px 10px;
+  float: none;
+}
+
+.ds-dest-checklist {
+  border: 1px solid #c3c4c7;
+  background: #fff;
+  max-height: 260px;
+  overflow: auto;
+  padding: 4px 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Row is a div — avoids WC label { float; margin-left:-150px } smashing the list. */
+.ds-dest-checklist .ds-dest-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 6px 12px;
+  line-height: 1.3;
+  box-sizing: border-box;
+}
+
+.ds-dest-checklist .ds-dest-item:hover {
+  background: #f0f0f1;
+}
+
+.ds-dest-checklist .ds-dest-item.is-hidden {
+  display: none;
+}
+
+.ds-dest-checklist .ds-dest-checkbox,
+.woocommerce_options_panel .ds-dest-checklist .ds-dest-checkbox {
+  float: none !important;
+  margin: 0 !important;
+  width: auto !important;
+  flex: 0 0 auto;
+}
+
+/* Inner label: reset WC product-data label layout completely. */
+.ds-dest-checklist .ds-dest-label,
+.woocommerce_options_panel .ds-dest-checklist .ds-dest-label {
+  display: flex !important;
+  align-items: center;
+  gap: 8px;
+  float: none !important;
+  width: auto !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  line-height: 1.3 !important;
+  cursor: pointer;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.ds-dest-flag {
+  flex: 0 0 1.5rem;
+  width: 1.5rem;
+  font-size: 1.15rem;
+  line-height: 1;
+  text-align: center;
+}
+
+.ds-dest-name {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.ds-dest-iso {
+  flex: 0 0 auto;
+  font-size: 11px;
+  color: #646970;
+  background: transparent;
+  padding: 0;
+}
+
+.ds-dest-count {
+  margin: 8px 0 0 !important;
+  padding: 0 !important;
+  color: #646970;
+  float: none !important;
+  clear: both;
+}
+
+.ds-bulk-panel {
+  margin: 12px 0;
+  padding: 12px 14px;
+  background: #fff;
+  border: 1px solid #c3c4c7;
+  border-radius: 4px;
+  max-width: 640px;
+}
+
+.ds-bulk-panel[hidden] {
+  display: none !important;
+}
+
+.ds-bulk-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 4px 12px;
+  margin: 10px 0;
+  max-height: 180px;
+  overflow: auto;
+}
+
+.ds-bulk-list label {
+  float: none !important;
+  width: auto !important;
+  margin: 0 !important;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ds-settings .description {
+  max-width: 52rem;
+}
