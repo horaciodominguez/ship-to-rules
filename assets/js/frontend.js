@@ -1,19 +1,31 @@
 /**
- * Destination Shop — frontend combobox + bar UX
+ * Ship-To Rules — frontend combobox + context UX
  */
 (function () {
   'use strict';
 
+  function navigateToDestination(slug) {
+    if (!window.STR_VARS) return;
+    var url = new URL(window.location.href);
+    if (slug) {
+      url.searchParams.set(STR_VARS.queryVar, slug);
+    } else {
+      url.searchParams.delete(STR_VARS.queryVar);
+    }
+    window.location.href = url.toString();
+  }
+
   function initCombobox(root) {
-    var toggle = root.querySelector('[data-ds-combobox-toggle]');
-    var panel = root.querySelector('[data-ds-combobox-panel]');
-    var search = root.querySelector('[data-ds-combobox-search]');
-    var list = root.querySelector('[data-ds-combobox-list]');
-    var empty = root.querySelector('[data-ds-combobox-empty]');
-    var input = root.querySelector('[data-ds-combobox-input]');
-    var flagEl = root.querySelector('[data-ds-combobox-flag]');
-    var labelEl = root.querySelector('[data-ds-combobox-label]');
-    if (!toggle || !panel || !list || !input) return;
+    var toggle = root.querySelector('[data-str-combobox-toggle]');
+    var panel = root.querySelector('[data-str-combobox-panel]');
+    var search = root.querySelector('[data-str-combobox-search]');
+    var list = root.querySelector('[data-str-combobox-list]');
+    var empty = root.querySelector('[data-str-combobox-empty]');
+    var input = root.querySelector('[data-str-combobox-input]');
+    var flagEl = root.querySelector('[data-str-combobox-flag]');
+    var labelEl = root.querySelector('[data-str-combobox-label]');
+    var instant = root.hasAttribute('data-str-instant');
+    if (!toggle || !panel || !list) return;
 
     function open() {
       root.classList.add('is-open');
@@ -49,7 +61,13 @@
       var value = li.getAttribute('data-value') || '';
       var name = li.getAttribute('data-name') || li.textContent.trim();
       var flag = li.getAttribute('data-flag') || (value ? '•' : '🌐');
-      input.value = value;
+
+      if (instant) {
+        navigateToDestination(value);
+        return;
+      }
+
+      if (input) input.value = value;
       if (flagEl) flagEl.textContent = flag;
       if (labelEl) labelEl.textContent = name;
       list.querySelectorAll('li[role="option"]').forEach(function (el) {
@@ -94,20 +112,13 @@
     });
   }
 
-  function initBars() {
-    document.querySelectorAll('[data-ds-bar]').forEach(function (form) {
-      var combo = form.querySelector('[data-ds-combobox]');
-      if (combo) initCombobox(combo);
-
-      form.addEventListener('submit', function () {
-        form.classList.add('is-loading');
-      });
-    });
+  function init() {
+    document.querySelectorAll('[data-str-combobox]').forEach(initCombobox);
   }
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initBars);
+    document.addEventListener('DOMContentLoaded', init);
   } else {
-    initBars();
+    init();
   }
 })();

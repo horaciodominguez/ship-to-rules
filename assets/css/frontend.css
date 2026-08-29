@@ -1,4 +1,4 @@
-/* Destination Shop — frontend */
+/* Ship-To Rules — frontend */
 
 :root {
   --ds-ink: #14213d;
@@ -16,7 +16,7 @@
   --ds-font: inherit;
 }
 
-.ds-bar {
+.str-bar {
   display: grid;
   grid-template-columns: minmax(200px, 1.1fr) minmax(160px, 1.4fr) auto;
   gap: 0.6rem;
@@ -31,19 +31,19 @@
   color: var(--ds-ink);
 }
 
-.ds-bar__destination,
-.ds-bar__search {
+.str-bar__destination,
+.str-bar__search {
   min-width: 0;
 }
 
-.ds-combobox {
+.str-combobox {
   position: relative;
   height: 100%;
 }
 
-.ds-combobox__toggle,
-.ds-bar__search-input,
-.ds-bar__submit {
+.str-combobox__toggle,
+.str-bar__search-input,
+.str-bar__submit {
   width: 100%;
   height: 100%;
   min-height: 2.85rem;
@@ -55,7 +55,7 @@
   font-size: 0.95rem;
 }
 
-.ds-combobox__toggle {
+.str-combobox__toggle {
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -65,26 +65,26 @@
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
-.ds-combobox__toggle:hover,
-.ds-bar__search-input:hover {
+.str-combobox__toggle:hover,
+.str-bar__search-input:hover {
   border-color: #b8c2ce;
 }
 
-.ds-combobox__toggle:focus,
-.ds-bar__search-input:focus,
-.ds-bar__submit:focus {
+.str-combobox__toggle:focus,
+.str-bar__search-input:focus,
+.str-bar__submit:focus {
   outline: none;
   border-color: var(--ds-accent);
   box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.18);
 }
 
-.ds-combobox__flag {
+.str-combobox__flag {
   font-size: 1.15rem;
   line-height: 1;
   flex-shrink: 0;
 }
 
-.ds-combobox__label {
+.str-combobox__label {
   flex: 1;
   min-width: 0;
   overflow: hidden;
@@ -92,17 +92,17 @@
   white-space: nowrap;
 }
 
-.ds-combobox__chevron {
+.str-combobox__chevron {
   flex-shrink: 0;
   opacity: 0.55;
   transition: transform 0.15s ease;
 }
 
-.ds-combobox.is-open .ds-combobox__chevron {
+.str-combobox.is-open .str-combobox__chevron {
   transform: rotate(180deg);
 }
 
-.ds-combobox__panel {
+.str-combobox__panel {
   position: absolute;
   z-index: 40;
   top: calc(100% + 4px);
@@ -116,7 +116,7 @@
   padding: 0.5rem;
 }
 
-.ds-combobox__search {
+.str-combobox__search {
   width: 100%;
   box-sizing: border-box;
   margin-bottom: 0.35rem;
@@ -126,7 +126,7 @@
   font: inherit;
 }
 
-.ds-combobox__list {
+.str-combobox__list {
   list-style: none;
   margin: 0;
   padding: 0;
@@ -134,7 +134,7 @@
   overflow: auto;
 }
 
-.ds-combobox__list li[role="option"] {
+.str-combobox__list li[role="option"] {
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -143,37 +143,37 @@
   cursor: pointer;
 }
 
-.ds-combobox__list li[role="option"]:hover,
-.ds-combobox__list li[role="option"].is-active,
-.ds-combobox__list li[aria-selected="true"] {
+.str-combobox__list li[role="option"]:hover,
+.str-combobox__list li[role="option"].is-active,
+.str-combobox__list li[aria-selected="true"] {
   background: rgba(15, 118, 110, 0.1);
 }
 
-.ds-combobox__list code {
+.str-combobox__list code {
   margin-left: auto;
   font-size: 0.7rem;
   color: var(--ds-muted);
   background: transparent;
 }
 
-.ds-combobox__empty,
-.ds-combobox__no-match {
+.str-combobox__empty,
+.str-combobox__no-match {
   margin: 0;
   padding: 0.75rem;
   color: var(--ds-muted);
   font-size: 0.9rem;
 }
 
-.ds-bar__search-input {
+.str-bar__search-input {
   box-sizing: border-box;
   padding: 0 0.9rem;
 }
 
-.ds-bar__search-input::placeholder {
+.str-bar__search-input::placeholder {
   color: var(--ds-muted);
 }
 
-.ds-bar__submit {
+.str-bar__submit {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -188,16 +188,16 @@
   transition: background 0.15s ease, transform 0.1s ease;
 }
 
-.ds-bar__submit:hover {
+.str-bar__submit:hover {
   background: var(--ds-accent-hover);
 }
 
-.ds-bar__submit:active {
+.str-bar__submit:active {
   transform: translateY(1px);
 }
 
 /* Passport */
-.ds-passport {
+.str-passport {
   margin: 1.25rem 0 0.5rem;
   padding: 1rem 0 0;
   border-top: 1px solid var(--ds-line);
@@ -205,7 +205,7 @@
   font-family: var(--ds-font);
 }
 
-.ds-passport__header {
+.str-passport__header {
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
@@ -214,7 +214,7 @@
   margin-bottom: 0.65rem;
 }
 
-.ds-passport__title {
+.str-passport__title {
   margin: 0;
   font-size: 0.8rem;
   font-weight: 700;
@@ -223,7 +223,7 @@
   color: var(--ds-muted);
 }
 
-.ds-passport__status {
+.str-passport__status {
   margin: 0.75rem 0 0;
   font-size: 0.9rem;
   font-weight: 600;
@@ -234,24 +234,24 @@
   border-radius: 999px;
 }
 
-.ds-passport__status--yes {
+.str-passport__status--yes {
   color: var(--ds-ok);
   background: var(--ds-ok-bg);
 }
 
-.ds-passport__status--no {
+.str-passport__status--no {
   color: var(--ds-no);
   background: var(--ds-no-bg);
 }
 
-.ds-passport__count,
-.ds-passport__everywhere {
+.str-passport__count,
+.str-passport__everywhere {
   margin: 0 0 0.65rem;
   color: var(--ds-muted);
   font-size: 0.92rem;
 }
 
-.ds-passport__chips {
+.str-passport__chips {
   list-style: none;
   margin: 0;
   padding: 0;
@@ -260,7 +260,7 @@
   gap: 0.4rem;
 }
 
-.ds-chip {
+.str-chip {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
@@ -274,29 +274,29 @@
   transition: border-color 0.15s ease, background 0.15s ease;
 }
 
-.ds-chip:hover,
-.ds-chip.is-active {
+.str-chip:hover,
+.str-chip.is-active {
   border-color: var(--ds-accent);
   background: rgba(15, 118, 110, 0.08);
 }
 
-.ds-chip__flag {
+.str-chip__flag {
   font-size: 1rem;
   line-height: 1;
 }
 
-.ds-passport__alt {
+.str-passport__alt {
   margin: 0.85rem 0 0;
   font-size: 0.9rem;
 }
 
-.ds-passport__alt a {
+.str-passport__alt a {
   color: var(--ds-accent);
   font-weight: 600;
 }
 
 /* Loop badge */
-.ds-loop-badge {
+.str-loop-badge {
   display: inline-flex;
   align-items: center;
   gap: 0.3rem;
@@ -308,49 +308,271 @@
   line-height: 1.3;
 }
 
-.ds-badge--yes {
+.str-badge--yes {
   color: var(--ds-ok);
   background: var(--ds-ok-bg);
 }
 
-.ds-badge--no {
+.str-badge--no {
   color: var(--ds-no);
   background: var(--ds-no-bg);
 }
 
-.ds-empty-state {
+.str-empty-state {
   text-align: center;
 }
 
-.ds-empty-state .button {
+.str-empty-state .button {
   margin-top: 0.5rem;
 }
 
-.ds-bar.is-loading {
+.str-bar.is-loading {
   opacity: 0.72;
   pointer-events: none;
 }
 
+/* Auto-injected bar wrapper */
+.str-bar-wrap {
+  margin: 0 0 1.25rem;
+  max-width: 920px;
+}
+
+.str-bar-wrap--product {
+  margin: 0 auto 1rem;
+}
+
+/* Compact picker */
+.str-picker {
+  margin: 0;
+}
+
+.str-picker__label {
+  display: block;
+  margin: 0 0 0.35rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--ds-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.str-picker__controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.str-picker .str-combobox {
+  min-width: 200px;
+  flex: 1 1 200px;
+}
+
+.str-picker__clear,
+.str-hint__clear {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--ds-accent);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.str-picker__clear:hover,
+.str-hint__clear:hover {
+  text-decoration: underline;
+}
+
+.str-combobox--instant .str-combobox__toggle {
+  min-height: 2.5rem;
+}
+
+/* Sticky destination hint */
+.str-hint {
+  margin: 0 0 1rem;
+  padding: 0.65rem 1rem;
+  background: #eef6f5;
+  border: 1px solid #c5e3df;
+  border-radius: var(--ds-radius);
+  color: var(--ds-ink);
+  font-family: var(--ds-font);
+}
+
+.str-hint__inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.65rem 1rem;
+}
+
+.str-hint__text {
+  margin: 0;
+  font-size: 0.92rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.str-hint__flag {
+  font-size: 1.15rem;
+  line-height: 1;
+}
+
+.str-hint__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.str-hint .str-combobox {
+  min-width: 180px;
+}
+
+/* Passport destination picker */
+.str-passport__picker {
+  margin: 1rem 0 0.75rem;
+  padding: 0.85rem 0 0;
+  border-top: 1px dashed var(--ds-line);
+}
+
+.str-passport__picker-label {
+  margin: 0 0 0.5rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--ds-muted);
+}
+
 @media (max-width: 720px) {
-  .ds-bar {
+  .str-bar {
     grid-template-columns: 1fr;
     box-shadow: none;
   }
 
-  .ds-bar__submit {
+  .str-bar__submit {
     width: 100%;
   }
 
-  .ds-combobox__panel {
+  .str-combobox__panel {
     right: 0;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .ds-combobox__toggle,
-  .ds-bar__submit,
-  .ds-chip,
-  .ds-combobox__chevron {
+  .str-combobox__toggle,
+  .str-bar__submit,
+  .str-chip,
+  .str-combobox__chevron {
     transition: none;
   }
+}
+
+/* Unified destination context */
+.str-context {
+  margin: 0 0 1rem;
+  padding: 0.75rem 1rem;
+  background: var(--ds-surface);
+  border: 1px solid var(--ds-line);
+  border-radius: var(--ds-radius);
+  font-family: var(--ds-font);
+}
+
+.str-context__inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.65rem 1rem;
+}
+
+.str-context__label {
+  margin: 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--ds-muted);
+}
+
+.str-context__controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.str-context .str-combobox {
+  min-width: 200px;
+}
+
+.str-context__clear {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--ds-accent);
+  text-decoration: none;
+}
+
+.str-context__clear:hover {
+  text-decoration: underline;
+}
+
+/* Product shipping notice */
+.str-shipping-notice {
+  margin: 1rem 0;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--ds-line);
+  border-radius: var(--ds-radius);
+  background: #fff;
+  font-family: var(--ds-font);
+}
+
+.str-shipping-notice__summary {
+  margin: 0 0 0.5rem;
+  font-weight: 600;
+}
+
+.str-shipping-notice__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin: 0 0 0.75rem;
+  padding: 0;
+  list-style: none;
+}
+
+.str-shipping-notice__status {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.92rem;
+}
+
+.str-shipping-notice__status--yes {
+  color: var(--ds-ok);
+}
+
+.str-shipping-notice__status--no,
+.str-shipping-notice__blocked {
+  color: var(--ds-no);
+}
+
+.str-shipping-notice__hint {
+  margin: 0;
+  color: var(--ds-muted);
+  font-size: 0.9rem;
+}
+
+/* Cart blocked items */
+.str-cart-blocked {
+  margin-bottom: 1rem;
+}
+
+.str-cart-blocked ul {
+  margin: 0.5rem 0 0;
+  padding-left: 1.2rem;
+}
+
+.str-cart-blocked li {
+  margin-bottom: 0.35rem;
 }

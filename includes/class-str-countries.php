@@ -2,17 +2,18 @@
 /**
  * Destination helpers: list, cookie, ISO flags, cache.
  *
- * @package DestinationShop
+ * @package ShipToRules
  */
 
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Class DS_Destinations
+ * Class STR_Countries
  */
-class DS_Destinations {
+class STR_Countries {
 
-	const TRANSIENT = 'ds_destinations_list_v2';
+	const TRANSIENT     = 'str_countries_list_v2';
+	const TRANSIENT_ISO = 'str_countries_iso_map_v2';
 
 	/**
 	 * Get destinations (cached).
@@ -32,7 +33,7 @@ class DS_Destinations {
 
 		$terms = get_terms(
 			array(
-				'taxonomy'   => DS_TAXONOMY,
+				'taxonomy'   => STR_TAXONOMY,
 				'hide_empty' => false,
 				'orderby'    => 'name',
 				'order'      => 'ASC',
@@ -42,14 +43,14 @@ class DS_Destinations {
 		$out = array();
 		if ( ! is_wp_error( $terms ) ) {
 			foreach ( $terms as $term ) {
-				$active = get_term_meta( $term->term_id, 'ds_active', true );
+				$active = get_term_meta( $term->term_id, 'str_active', true );
 				if ( '' === $active ) {
 					$active = '1';
 				}
 				if ( ! $include_inactive && '0' === (string) $active ) {
 					continue;
 				}
-				$iso = strtoupper( (string) get_term_meta( $term->term_id, 'ds_iso2', true ) );
+				$iso = strtoupper( (string) get_term_meta( $term->term_id, 'str_iso2', true ) );
 				$out[] = (object) array(
 					'id'     => (int) $term->term_id,
 					'name'   => $term->name,
@@ -72,6 +73,48 @@ class DS_Destinations {
 	public static function flush_cache() {
 		delete_transient( self::TRANSIENT );
 		delete_transient( self::TRANSIENT . '_all' );
+		delete_transient( self::TRANSIENT_ISO );
+	}
+
+	/**
+	 * Resolve destination by ISO2 country code.
+	 *
+	 * @param string $iso2 ISO 3166-1 alpha-2.
+	 * @return object|null
+	 */
+	public static function get_by_iso2( $iso2 ) {
+		$iso2 = self::sanitize_iso2( $iso2 );
+		if ( 2 !== strlen( $iso2 ) ) {
+			return null;
+		}
+
+		$map = self::get_iso_map();
+		return isset( $map[ $iso2 ] ) ? $map[ $iso2 ] : null;
+	}
+
+	/**
+	 * ISO2 => destination object map (cached).
+	 *
+	 * @param bool $force Force refresh.
+	 * @return array<string,object>
+	 */
+	public static function get_iso_map( $force = false ) {
+		if ( ! $force ) {
+			$cached = get_transient( self::TRANSIENT_ISO );
+			if ( is_array( $cached ) ) {
+				return $cached;
+			}
+		}
+
+		$map = array();
+		foreach ( self::get_all( $force ) as $d ) {
+			if ( ! empty( $d->iso2 ) ) {
+				$map[ strtoupper( $d->iso2 ) ] = $d;
+			}
+		}
+
+		set_transient( self::TRANSIENT_ISO, $map, HOUR_IN_SECONDS );
+		return $map;
 	}
 
 	/**
@@ -93,16 +136,16 @@ class DS_Destinations {
 
 		// Inactive / uncached: try direct lookup.
 		if ( is_numeric( $ref ) ) {
-			$term = get_term( (int) $ref, DS_TAXONOMY );
+			$term = get_term( (int) $ref, STR_TAXONOMY );
 		} else {
-			$term = get_term_by( 'slug', sanitize_title( $ref ), DS_TAXONOMY );
+			$term = get_term_by( 'slug', sanitize_title( $ref ), STR_TAXONOMY );
 		}
 
 		if ( ! $term || is_wp_error( $term ) ) {
 			return null;
 		}
 
-		$iso = strtoupper( (string) get_term_meta( $term->term_id, 'ds_iso2', true ) );
+		$iso = strtoupper( (string) get_term_meta( $term->term_id, 'str_iso2', true ) );
 		return (object) array(
 			'id'   => (int) $term->term_id,
 			'name' => $term->name,
@@ -120,30 +163,28 @@ class DS_Destinations {
 	 */
 	public static function current() {
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
-		if ( isset( $_GET[ DS_QUERY_VAR ] ) && '' !== $_GET[ DS_QUERY_VAR ] ) {
+		if ( isset( $_GET[ STR_QUERY_VAR ] ) && '' !== $_GET[ STR_QUERY_VAR ] ) {
 			// phpcs:ignore WordPress.Security.NonceVerification.Recommended
-			$ref = sanitize_title( wp_unslash( $_GET[ DS_QUERY_VAR ] ) );
+			$ref = sanitize_title( wp_unslash( $_GET[ STR_QUERY_VAR ] ) );
 			$dest = self::get( $ref );
 			if ( $dest ) {
 				return $dest;
 			}
 		}
 
-		// Legacy query param from v1.
-		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
-		if ( isset( $_GET['product_country'] ) && '' !== $_GET['product_country'] ) {
-			// phpcs:ignore WordPress.Security.NonceVerification.Recommended
-			$legacy_id = absint( $_GET['product_country'] );
-			$map       = get_option( 'ds_legacy_country_map', array() );
-			if ( $legacy_id && isset( $map[ $legacy_id ] ) ) {
-				return self::get( (int) $map[ $legacy_id ] );
-			}
-			return self::get( $legacy_id );
+		if ( ! empty( $_COOKIE[ STR_COOKIE ] ) ) {
+			$ref = sanitize_title( wp_unslash( $_COOKIE[ STR_COOKIE ] ) );
+			return self::get( $ref );
 		}
 
-		if ( ! empty( $_COOKIE[ DS_COOKIE ] ) ) {
-			$ref = sanitize_title( wp_unslash( $_COOKIE[ DS_COOKIE ] ) );
-			return self::get( $ref );
+		// One-time read of legacy cookie from previous installs (migration copies selection on next set).
+		if ( ! empty( $_COOKIE['ds_destination'] ) ) {
+			$ref = sanitize_title( wp_unslash( $_COOKIE['ds_destination'] ) );
+			$dest = self::get( $ref );
+			if ( $dest ) {
+				self::set_cookie( $dest->slug );
+				return $dest;
+			}
 		}
 
 		return null;
@@ -160,8 +201,8 @@ class DS_Destinations {
 			return;
 		}
 		$expire = time() + ( 30 * DAY_IN_SECONDS );
-		setcookie( DS_COOKIE, $slug, $expire, COOKIEPATH ? COOKIEPATH : '/', COOKIE_DOMAIN, is_ssl(), true );
-		$_COOKIE[ DS_COOKIE ] = $slug;
+		setcookie( STR_COOKIE, $slug, $expire, COOKIEPATH ? COOKIEPATH : '/', COOKIE_DOMAIN, is_ssl(), true );
+		$_COOKIE[ STR_COOKIE ] = $slug;
 	}
 
 	/**
@@ -171,8 +212,8 @@ class DS_Destinations {
 		if ( headers_sent() ) {
 			return;
 		}
-		setcookie( DS_COOKIE, '', time() - YEAR_IN_SECONDS, COOKIEPATH ? COOKIEPATH : '/', COOKIE_DOMAIN, is_ssl(), true );
-		unset( $_COOKIE[ DS_COOKIE ] );
+		setcookie( STR_COOKIE, '', time() - YEAR_IN_SECONDS, COOKIEPATH ? COOKIEPATH : '/', COOKIE_DOMAIN, is_ssl(), true );
+		unset( $_COOKIE[ STR_COOKIE ] );
 	}
 
 	/**
@@ -193,7 +234,7 @@ class DS_Destinations {
 
 		$terms = wp_get_object_terms(
 			$product_id,
-			DS_TAXONOMY,
+			STR_TAXONOMY,
 			array(
 				'orderby' => 'name',
 				'order'   => 'ASC',
@@ -206,11 +247,11 @@ class DS_Destinations {
 
 		// Fallback: mirrored IDs from product meta (written on save).
 		if ( empty( $terms ) ) {
-			$meta_ids = get_post_meta( $product_id, '_ds_ship_to_ids', true );
+			$meta_ids = get_post_meta( $product_id, '_str_ship_to_ids', true );
 			if ( is_array( $meta_ids ) && ! empty( $meta_ids ) ) {
 				$terms = array();
 				foreach ( $meta_ids as $tid ) {
-					$term = get_term( (int) $tid, DS_TAXONOMY );
+					$term = get_term( (int) $tid, STR_TAXONOMY );
 					if ( $term && ! is_wp_error( $term ) ) {
 						$terms[] = $term;
 					}
@@ -220,14 +261,14 @@ class DS_Destinations {
 
 		$out = array();
 		foreach ( $terms as $term ) {
-			$active = get_term_meta( $term->term_id, 'ds_active', true );
+			$active = get_term_meta( $term->term_id, 'str_active', true );
 			if ( '' === $active ) {
 				$active = '1';
 			}
 			if ( $only_active && '0' === (string) $active ) {
 				continue;
 			}
-			$iso = strtoupper( (string) get_term_meta( $term->term_id, 'ds_iso2', true ) );
+			$iso = strtoupper( (string) get_term_meta( $term->term_id, 'str_iso2', true ) );
 			$out[] = (object) array(
 				'id'   => (int) $term->term_id,
 				'name' => $term->name,
@@ -260,9 +301,13 @@ class DS_Destinations {
 			return null;
 		}
 
+		$country = ! empty( $destination->iso2 ) ? $destination->iso2 : '';
+		if ( $country && class_exists( 'STR_Rules' ) ) {
+			return STR_Rules::can_ship( $product_id, $country );
+		}
+
 		$assigned = self::for_product( $product_id, false );
 		if ( empty( $assigned ) ) {
-			// No destinations assigned = available everywhere (open catalog default).
 			return true;
 		}
 
@@ -336,7 +381,7 @@ class DS_Destinations {
 	 * @return string
 	 */
 	public static function results_url() {
-		$url = DS_Settings::get( 'results_url' );
+		$url = STR_Settings::get( 'results_url' );
 		if ( $url ) {
 			return $url;
 		}

@@ -1,18 +1,18 @@
 /* Destination Shop — admin
  *
- * Keep selectors scoped under .ds-* so WooCommerce product-data CSS
+ * Keep selectors scoped under .str-* so WooCommerce product-data CSS
  * (label { float; margin-left:-150px }) cannot smash the checklist.
  */
 
-.ds-product-destinations {
+.str-product-destinations {
   padding: 12px 16px 16px;
 }
 
-.ds-ships-to {
+.str-ships-to {
   max-width: 480px;
 }
 
-.ds-ships-to__title {
+.str-ships-to__title {
   margin: 0 0 8px;
   padding: 0;
   font-size: 13px;
@@ -21,19 +21,19 @@
   width: auto;
 }
 
-.ds-ships-to__help,
-.ds-ships-to__empty {
+.str-ships-to__help,
+.str-ships-to__empty {
   margin: 0 0 10px;
   padding: 0;
   color: #646970;
   line-height: 1.45;
 }
 
-.ds-ships-to__empty a {
+.str-ships-to__empty a {
   font-weight: 600;
 }
 
-.ds-product-destinations .ds-dest-filter {
+.str-product-destinations .str-dest-filter {
   display: block;
   box-sizing: border-box;
   width: 100%;
@@ -43,7 +43,7 @@
   float: none;
 }
 
-.ds-dest-checklist {
+.str-country-checklist {
   border: 1px solid #c3c4c7;
   background: #fff;
   max-height: 260px;
@@ -54,7 +54,7 @@
 }
 
 /* Row is a div — avoids WC label { float; margin-left:-150px } smashing the list. */
-.ds-dest-checklist .ds-dest-item {
+.str-country-checklist .str-dest-item {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -64,16 +64,16 @@
   box-sizing: border-box;
 }
 
-.ds-dest-checklist .ds-dest-item:hover {
+.str-country-checklist .str-dest-item:hover {
   background: #f0f0f1;
 }
 
-.ds-dest-checklist .ds-dest-item.is-hidden {
+.str-country-checklist .str-dest-item.is-hidden {
   display: none;
 }
 
-.ds-dest-checklist .ds-dest-checkbox,
-.woocommerce_options_panel .ds-dest-checklist .ds-dest-checkbox {
+.str-country-checklist .str-dest-checkbox,
+.woocommerce_options_panel .str-country-checklist .str-dest-checkbox {
   float: none !important;
   margin: 0 !important;
   width: auto !important;
@@ -81,8 +81,8 @@
 }
 
 /* Inner label: reset WC product-data label layout completely. */
-.ds-dest-checklist .ds-dest-label,
-.woocommerce_options_panel .ds-dest-checklist .ds-dest-label {
+.str-country-checklist .str-dest-label,
+.woocommerce_options_panel .str-country-checklist .str-dest-label {
   display: flex !important;
   align-items: center;
   gap: 8px;
@@ -97,7 +97,7 @@
   min-width: 0;
 }
 
-.ds-dest-flag {
+.str-dest-flag {
   flex: 0 0 1.5rem;
   width: 1.5rem;
   font-size: 1.15rem;
@@ -105,12 +105,12 @@
   text-align: center;
 }
 
-.ds-dest-name {
+.str-dest-name {
   flex: 1 1 auto;
   min-width: 0;
 }
 
-.ds-dest-iso {
+.str-dest-iso {
   flex: 0 0 auto;
   font-size: 11px;
   color: #646970;
@@ -118,7 +118,7 @@
   padding: 0;
 }
 
-.ds-dest-count {
+.str-dest-count {
   margin: 8px 0 0 !important;
   padding: 0 !important;
   color: #646970;
@@ -126,7 +126,7 @@
   clear: both;
 }
 
-.ds-bulk-panel {
+.str-bulk-panel {
   margin: 12px 0;
   padding: 12px 14px;
   background: #fff;
@@ -135,11 +135,11 @@
   max-width: 640px;
 }
 
-.ds-bulk-panel[hidden] {
+.str-bulk-panel[hidden] {
   display: none !important;
 }
 
-.ds-bulk-list {
+.str-bulk-list {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
   gap: 4px 12px;
@@ -148,7 +148,7 @@
   overflow: auto;
 }
 
-.ds-bulk-list label {
+.str-bulk-list label {
   float: none !important;
   width: auto !important;
   margin: 0 !important;
@@ -157,6 +157,6 @@
   gap: 6px;
 }
 
-.ds-settings .description {
+.str-settings .description {
   max-width: 52rem;
 }

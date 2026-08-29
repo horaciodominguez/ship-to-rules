@@ -2,15 +2,15 @@
 /**
  * Catalog query filter by destination.
  *
- * @package DestinationShop
+ * @package ShipToRules
  */
 
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Class DS_Query
+ * Class STR_Query
  */
-class DS_Query {
+class STR_Query {
 
 	/**
 	 * Hooks.
@@ -28,18 +28,40 @@ class DS_Query {
 	 */
 	public static function persist_from_request() {
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
-		if ( ! isset( $_GET[ DS_QUERY_VAR ] ) ) {
+		if ( ! isset( $_GET[ STR_QUERY_VAR ] ) ) {
 			return;
 		}
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
-		$raw = sanitize_title( wp_unslash( $_GET[ DS_QUERY_VAR ] ) );
+		$raw = sanitize_title( wp_unslash( $_GET[ STR_QUERY_VAR ] ) );
 		if ( '' === $raw ) {
-			DS_Destinations::clear_cookie();
+			STR_Countries::clear_cookie();
 			return;
 		}
-		$dest = DS_Destinations::get( $raw );
+		$dest = STR_Countries::get( $raw );
 		if ( $dest ) {
-			DS_Destinations::set_cookie( $dest->slug );
+			STR_Countries::set_cookie( $dest->slug );
+			self::sync_customer_country( $dest );
+		}
+	}
+
+	/**
+	 * Sync WooCommerce customer country from selected destination.
+	 *
+	 * @param object $dest Destination.
+	 */
+	private static function sync_customer_country( $dest ) {
+		if ( empty( $dest->iso2 ) || ! function_exists( 'WC' ) || ! WC()->customer ) {
+			return;
+		}
+
+		$iso = STR_Countries::sanitize_iso2( $dest->iso2 );
+		if ( 2 !== strlen( $iso ) ) {
+			return;
+		}
+
+		WC()->customer->set_shipping_country( $iso );
+		if ( ! WC()->customer->get_billing_country() ) {
+			WC()->customer->set_billing_country( $iso );
 		}
 	}
 
@@ -49,11 +71,11 @@ class DS_Query {
 	 * @param WC_Query $wc_query Query.
 	 */
 	public static function filter( $wc_query ) {
-		if ( is_admin() || 'filter' !== DS_Settings::get( 'catalog_mode' ) ) {
+		if ( is_admin() || '1' !== STR_Settings::get( 'enable_catalog_filter' ) || 'filter' !== STR_Settings::get( 'catalog_mode' ) ) {
 			return;
 		}
 
-		$dest = DS_Destinations::current();
+		$dest = STR_Countries::current();
 		if ( ! $dest ) {
 			return;
 		}
@@ -70,7 +92,7 @@ class DS_Query {
 		if ( is_admin() || ! $query->is_main_query() ) {
 			return;
 		}
-		if ( 'filter' !== DS_Settings::get( 'catalog_mode' ) ) {
+		if ( 'filter' !== STR_Settings::get( 'catalog_mode' ) || '1' !== STR_Settings::get( 'enable_catalog_filter' ) ) {
 			return;
 		}
 		if ( ! $query->is_search() ) {
@@ -89,7 +111,7 @@ class DS_Query {
 			return;
 		}
 
-		$dest = DS_Destinations::current();
+		$dest = STR_Countries::current();
 		if ( ! $dest ) {
 			return;
 		}
@@ -105,10 +127,10 @@ class DS_Query {
 	 * @return array
 	 */
 	public static function shortcode_query( $args ) {
-		if ( 'filter' !== DS_Settings::get( 'catalog_mode' ) ) {
+		if ( 'filter' !== STR_Settings::get( 'catalog_mode' ) || '1' !== STR_Settings::get( 'enable_catalog_filter' ) ) {
 			return $args;
 		}
-		$dest = DS_Destinations::current();
+		$dest = STR_Countries::current();
 		if ( ! $dest ) {
 			return $args;
 		}
@@ -133,13 +155,13 @@ class DS_Query {
 		$availability = array(
 			'relation' => 'OR',
 			array(
-				'taxonomy' => DS_TAXONOMY,
+				'taxonomy' => STR_TAXONOMY,
 				'field'    => 'term_id',
 				'terms'    => array( (int) $dest->id ),
 				'operator' => 'IN',
 			),
 			array(
-				'taxonomy' => DS_TAXONOMY,
+				'taxonomy' => STR_TAXONOMY,
 				'operator' => 'NOT EXISTS',
 			),
 		);
@@ -162,21 +184,21 @@ class DS_Query {
 	 * @return string
 	 */
 	public static function empty_message( $html ) {
-		$dest = DS_Destinations::current();
+		$dest = STR_Countries::current();
 		if ( ! $dest ) {
 			return $html;
 		}
-		$tpl = DS_Settings::get( 'empty_message' );
+		$tpl = STR_Settings::get( 'empty_message' );
 		$msg = str_replace( '{country}', $dest->name, $tpl );
-		$shop = esc_url( remove_query_arg( DS_QUERY_VAR, DS_Destinations::results_url() ) );
+		$shop = esc_url( remove_query_arg( STR_QUERY_VAR, STR_Countries::results_url() ) );
 
 		ob_start();
 		?>
-		<div class="woocommerce-info ds-empty-state">
+		<div class="woocommerce-info str-empty-state">
 			<p><?php echo esc_html( $msg ); ?></p>
 			<p>
 				<a class="button" href="<?php echo esc_url( $shop ); ?>">
-					<?php esc_html_e( 'Clear destination', 'destination-shop' ); ?>
+					<?php esc_html_e( 'Clear destination', 'ship-to-rules' ); ?>
 				</a>
 			</p>
 		</div>

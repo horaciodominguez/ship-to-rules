@@ -11,7 +11,7 @@
     if (!payload) return;
     var ids = [];
     if (list) {
-      list.querySelectorAll('.ds-dest-checkbox:checked').forEach(function (cb) {
+      list.querySelectorAll('.str-dest-checkbox:checked').forEach(function (cb) {
         var id = parseInt(cb.value, 10);
         if (id) ids.push(id);
       });
@@ -24,10 +24,10 @@
   }
 
   function initProductChecklist() {
-    var filter = document.querySelector('.ds-dest-filter');
-    var list = document.querySelector('[data-ds-dest-list]');
-    var count = document.querySelector('.ds-dest-count');
-    var payload = document.querySelector('[data-ds-dest-payload]');
+    var filter = document.querySelector('.str-dest-filter');
+    var list = document.querySelector('[data-str-country-list]');
+    var count = document.querySelector('.str-dest-count');
+    var payload = document.querySelector('[data-str-dest-payload]');
     if (!list || !payload) return;
 
     function refresh() {
@@ -37,7 +37,7 @@
     if (filter) {
       filter.addEventListener('input', function () {
         var q = filter.value.toLowerCase().trim();
-        list.querySelectorAll('.ds-dest-item').forEach(function (item) {
+        list.querySelectorAll('.str-dest-item').forEach(function (item) {
           var name = item.getAttribute('data-name') || '';
           item.classList.toggle('is-hidden', q && name.indexOf(q) === -1);
         });
@@ -49,7 +49,7 @@
   }
 
   function initBulkPanel() {
-    var panel = document.getElementById('ds-bulk-destinations');
+    var panel = document.getElementById('str-bulk-destinations');
     var selector = document.getElementById('bulk-action-selector-top');
     var selector2 = document.getElementById('bulk-action-selector-bottom');
     if (!panel) return;
@@ -57,7 +57,7 @@
     function sync() {
       var val = (selector && selector.value) || '';
       var val2 = (selector2 && selector2.value) || '';
-      var show = val === 'ds_assign_destinations' || val2 === 'ds_assign_destinations';
+      var show = val === 'str_assign_countries' || val2 === 'str_assign_countries';
       panel.hidden = !show;
     }
 
@@ -78,13 +78,13 @@
     var form = document.getElementById('post');
     if (form) {
       form.addEventListener('submit', function () {
-        var list = document.querySelector('[data-ds-dest-list]');
-        var payload = document.querySelector('[data-ds-dest-payload]');
-        var count = document.querySelector('.ds-dest-count');
+        var list = document.querySelector('[data-str-country-list]');
+        var payload = document.querySelector('[data-str-dest-payload]');
+        var count = document.querySelector('.str-dest-count');
         syncPayload(list, payload, count);
 
         document.querySelectorAll(
-          '[data-ds-dest-payload], input[name="ds_product_destinations_nonce"], input[name="ds_product_destinations_posted"], .ds-dest-checkbox'
+          '[data-str-dest-payload], input[name="str_product_countries_nonce"], input[name="str_product_countries_posted"], .str-dest-checkbox'
         ).forEach(function (el) {
           el.disabled = false;
         });

@@ -1,0 +1,17 @@
+{
+  "name": "horacio/ship-to-rules",
+  "description": "Ship-To Rules for WooCommerce",
+  "type": "wordpress-plugin",
+  "license": "GPL-2.0-or-later",
+  "require-dev": {
+    "phpunit/phpunit": "^9.6"
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "STR\\Tests\\": "tests/"
+    }
+  },
+  "scripts": {
+    "test": "phpunit"
+  }
+}

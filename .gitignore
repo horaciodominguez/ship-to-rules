@@ -5,3 +5,5 @@ node_modules/
 .cursor/
 *.log
 *.zip
+/vendor/
+composer.lock

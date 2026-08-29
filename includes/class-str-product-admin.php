@@ -2,15 +2,15 @@
 /**
  * Product admin: tab, columns, bulk assign.
  *
- * @package DestinationShop
+ * @package ShipToRules
  */
 
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Class DS_Product_Admin
+ * Class STR_Product_Admin
  */
-class DS_Product_Admin {
+class STR_Product_Admin {
 
 	/**
 	 * Hooks.
@@ -38,9 +38,9 @@ class DS_Product_Admin {
 	 * @return array
 	 */
 	public static function tab( $tabs ) {
-		$tabs['ds_destinations'] = array(
-			'label'    => __( 'Destinations', 'destination-shop' ),
-			'target'   => 'ds_destinations_product_data',
+		$tabs['STR_Countries'] = array(
+			'label'    => __( 'Ship-To', 'ship-to-rules' ),
+			'target'   => 'STR_Countries_product_data',
 			'class'    => array( 'show_if_simple', 'show_if_variable' ),
 			'priority' => 75,
 		);
@@ -56,40 +56,52 @@ class DS_Product_Admin {
 	 */
 	public static function panel() {
 		global $post;
-		$destinations = DS_Destinations::get_all( true, true );
-		$selected     = wp_get_object_terms( $post->ID, DS_TAXONOMY, array( 'fields' => 'ids' ) );
+		$destinations = STR_Countries::get_all( true, true );
+		$selected     = wp_get_object_terms( $post->ID, STR_TAXONOMY, array( 'fields' => 'ids' ) );
 		if ( is_wp_error( $selected ) ) {
 			$selected = array();
 		}
 		$selected = array_map( 'intval', (array) $selected );
 		if ( empty( $selected ) ) {
-			$meta_ids = get_post_meta( $post->ID, '_ds_ship_to_ids', true );
+			$meta_ids = get_post_meta( $post->ID, '_str_ship_to_ids', true );
 			if ( is_array( $meta_ids ) ) {
 				$selected = array_map( 'intval', $meta_ids );
 			}
 		}
-		$manage_url = admin_url( 'edit-tags.php?taxonomy=' . DS_TAXONOMY . '&post_type=product' );
+		$rule_mode = STR_Rules::get_product_rule_mode( $post->ID );
+		$manage_url = admin_url( 'edit-tags.php?taxonomy=' . STR_TAXONOMY . '&post_type=product' );
 		?>
-		<div id="ds_destinations_product_data" class="panel woocommerce_options_panel">
-			<div class="options_group ds-product-destinations">
-				<div class="ds-ships-to">
-					<h4 class="ds-ships-to__title"><?php esc_html_e( 'Ships to', 'destination-shop' ); ?></h4>
+		<div id="STR_Countries_product_data" class="panel woocommerce_options_panel">
+			<div class="options_group str-product-destinations">
+				<div class="str-ships-to">
+					<h4 class="str-ships-to__title"><?php esc_html_e( 'Ships to', 'ship-to-rules' ); ?></h4>
 
 					<?php if ( empty( $destinations ) ) : ?>
-						<p class="ds-ships-to__empty">
+						<p class="str-ships-to__empty">
 							<?php
 							echo wp_kses_post(
 								sprintf(
 									/* translators: %s: link to Products → Destinations */
-									__( 'No destinations yet. <a href="%s">Create destinations</a> under Products → Destinations, then return here to assign them.', 'destination-shop' ),
+									__( 'No countries yet. <a href="%s">Create countries</a> under Products → Ship-To Countries, then return here to assign them.', 'ship-to-rules' ),
 									esc_url( $manage_url )
 								)
 							);
 							?>
 						</p>
 					<?php else : ?>
-						<p class="ds-ships-to__help">
-							<?php esc_html_e( 'Select where this product can be shipped. Leave empty to treat it as available everywhere.', 'destination-shop' ); ?>
+						<p class="str-ships-to__help">
+							<?php esc_html_e( 'Select where this product can be shipped. Leave empty to treat it as available everywhere (unless a category rule applies).', 'ship-to-rules' ); ?>
+						</p>
+						<p class="form-field str-rule-mode">
+							<label for="str_rule_mode"><?php esc_html_e( 'Rule mode', 'ship-to-rules' ); ?></label>
+							<select name="str_rule_mode" id="str_rule_mode">
+								<option value="allow" <?php selected( $rule_mode, STR_Rules::MODE_ALLOW ); ?>>
+									<?php esc_html_e( 'Allow only selected countries', 'ship-to-rules' ); ?>
+								</option>
+								<option value="deny" <?php selected( $rule_mode, STR_Rules::MODE_DENY ); ?>>
+									<?php esc_html_e( 'Deny selected countries (ship everywhere else)', 'ship-to-rules' ); ?>
+								</option>
+							</select>
 						</p>
 						<?php
 						/*
@@ -100,49 +112,49 @@ class DS_Product_Admin {
 						?>
 						<input
 							type="hidden"
-							name="ds_product_destinations_payload"
-							id="ds_product_destinations_payload"
+							name="str_product_countries_payload"
+							id="str_product_countries_payload"
 							value="<?php echo esc_attr( wp_json_encode( array_values( $selected ) ) ); ?>"
-							data-ds-dest-payload
+							data-str-dest-payload
 						/>
-						<input type="hidden" name="ds_product_destinations_posted" value="1" />
-						<?php wp_nonce_field( 'ds_save_product_destinations', 'ds_product_destinations_nonce' ); ?>
+						<input type="hidden" name="str_product_countries_posted" value="1" />
+						<?php wp_nonce_field( 'str_save_product_countries', 'str_product_countries_nonce' ); ?>
 						<input
 							type="search"
-							class="ds-dest-filter"
-							placeholder="<?php esc_attr_e( 'Filter destinations…', 'destination-shop' ); ?>"
+							class="str-dest-filter"
+							placeholder="<?php esc_attr_e( 'Filter destinations…', 'ship-to-rules' ); ?>"
 							autocomplete="off"
 						/>
-						<div class="ds-dest-checklist" role="group" aria-label="<?php esc_attr_e( 'Destinations', 'destination-shop' ); ?>" data-ds-dest-list>
+						<div class="str-country-checklist" role="group" aria-label="<?php esc_attr_e( 'Destinations', 'ship-to-rules' ); ?>" data-str-country-list>
 							<?php foreach ( $destinations as $d ) : ?>
 								<?php
 								$search   = strtolower( $d->name . ( $d->iso2 ? ' ' . $d->iso2 : '' ) );
-								$input_id = 'ds_dest_' . (int) $d->id;
+								$input_id = 'str_country_' . (int) $d->id;
 								?>
-								<div class="ds-dest-item" data-name="<?php echo esc_attr( $search ); ?>">
+								<div class="str-dest-item" data-name="<?php echo esc_attr( $search ); ?>">
 									<input
 										type="checkbox"
-										class="ds-dest-checkbox"
+										class="str-dest-checkbox"
 										id="<?php echo esc_attr( $input_id ); ?>"
 										value="<?php echo esc_attr( (string) $d->id ); ?>"
-										data-ds-dest-id="<?php echo esc_attr( (string) $d->id ); ?>"
+										data-str-dest-id="<?php echo esc_attr( (string) $d->id ); ?>"
 										<?php checked( in_array( (int) $d->id, $selected, true ) ); ?>
 									/>
-									<label class="ds-dest-label" for="<?php echo esc_attr( $input_id ); ?>">
-										<span class="ds-dest-flag" aria-hidden="true"><?php echo esc_html( $d->flag ? $d->flag : '•' ); ?></span>
-										<span class="ds-dest-name"><?php echo esc_html( $d->name ); ?></span>
+									<label class="str-dest-label" for="<?php echo esc_attr( $input_id ); ?>">
+										<span class="str-dest-flag" aria-hidden="true"><?php echo esc_html( $d->flag ? $d->flag : '•' ); ?></span>
+										<span class="str-dest-name"><?php echo esc_html( $d->name ); ?></span>
 										<?php if ( $d->iso2 ) : ?>
-											<code class="ds-dest-iso"><?php echo esc_html( $d->iso2 ); ?></code>
+											<code class="str-dest-iso"><?php echo esc_html( $d->iso2 ); ?></code>
 										<?php endif; ?>
 									</label>
 								</div>
 							<?php endforeach; ?>
 						</div>
-						<p class="ds-dest-count" data-ds-dest-count>
+						<p class="str-dest-count" data-str-dest-count>
 							<?php
 							printf(
 								/* translators: %d: selected count */
-								esc_html__( '%d selected', 'destination-shop' ),
+								esc_html__( '%d selected', 'ship-to-rules' ),
 								count( $selected )
 							);
 							?>
@@ -187,12 +199,12 @@ class DS_Product_Admin {
 		}
 
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing
-		if ( empty( $_POST['ds_product_destinations_posted'] ) ) {
+		if ( empty( $_POST['str_product_countries_posted'] ) ) {
 			return;
 		}
 
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing
-		if ( ! isset( $_POST['ds_product_destinations_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['ds_product_destinations_nonce'] ) ), 'ds_save_product_destinations' ) ) {
+		if ( ! isset( $_POST['str_product_countries_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['str_product_countries_nonce'] ) ), 'str_save_product_countries' ) ) {
 			return;
 		}
 
@@ -200,32 +212,42 @@ class DS_Product_Admin {
 
 		// Prefer JSON payload (survives WooCommerce disabling tab checkboxes).
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing
-		if ( isset( $_POST['ds_product_destinations_payload'] ) ) {
+		if ( isset( $_POST['str_product_countries_payload'] ) ) {
 			// phpcs:ignore WordPress.Security.NonceVerification.Missing
-			$raw = wp_unslash( $_POST['ds_product_destinations_payload'] );
+			$raw = wp_unslash( $_POST['str_product_countries_payload'] );
 			$decoded = json_decode( is_string( $raw ) ? $raw : '', true );
 			if ( is_array( $decoded ) ) {
 				$ids = array_map( 'absint', $decoded );
 			}
-		} elseif ( isset( $_POST['ds_product_destinations'] ) && is_array( $_POST['ds_product_destinations'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		} elseif ( isset( $_POST['str_product_countries'] ) && is_array( $_POST['str_product_countries'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
 			// phpcs:ignore WordPress.Security.NonceVerification.Missing
-			$ids = array_map( 'absint', wp_unslash( $_POST['ds_product_destinations'] ) );
+			$ids = array_map( 'absint', wp_unslash( $_POST['str_product_countries'] ) );
 		}
 
 		$ids = array_values( array_unique( array_filter( $ids ) ) );
 
-		$result = wp_set_object_terms( $product_id, $ids, DS_TAXONOMY, false );
+		$result = wp_set_object_terms( $product_id, $ids, STR_TAXONOMY, false );
 		if ( is_wp_error( $result ) ) {
 			return;
 		}
 
 		clean_object_term_cache( $product_id, 'product' );
-		clean_object_term_cache( $product_id, DS_TAXONOMY );
-		wp_cache_delete( $product_id, DS_TAXONOMY . '_relationships' );
+		clean_object_term_cache( $product_id, STR_TAXONOMY );
+		wp_cache_delete( $product_id, STR_TAXONOMY . '_relationships' );
 		wp_cache_delete( $product_id, 'product_meta' );
-		DS_Destinations::flush_cache();
+		STR_Countries::flush_cache();
 
-		update_post_meta( $product_id, '_ds_ship_to_ids', $ids );
+		update_post_meta( $product_id, '_str_ship_to_ids', $ids );
+
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing
+		if ( isset( $_POST['str_rule_mode'] ) ) {
+			$mode = sanitize_key( wp_unslash( $_POST['str_rule_mode'] ) );
+			update_post_meta(
+				$product_id,
+				'_str_rule_mode',
+				STR_Rules::MODE_DENY === $mode ? STR_Rules::MODE_DENY : STR_Rules::MODE_ALLOW
+			);
+		}
 	}
 
 	/**
@@ -239,11 +261,11 @@ class DS_Product_Admin {
 		foreach ( $columns as $key => $label ) {
 			$new[ $key ] = $label;
 			if ( 'product_tag' === $key || 'sku' === $key ) {
-				$new['ds_destinations'] = __( 'Ships to', 'destination-shop' );
+				$new['STR_Countries'] = __( 'Ships to', 'ship-to-rules' );
 			}
 		}
-		if ( ! isset( $new['ds_destinations'] ) ) {
-			$new['ds_destinations'] = __( 'Ships to', 'destination-shop' );
+		if ( ! isset( $new['STR_Countries'] ) ) {
+			$new['STR_Countries'] = __( 'Ships to', 'ship-to-rules' );
 		}
 		return $new;
 	}
@@ -255,12 +277,12 @@ class DS_Product_Admin {
 	 * @param int    $post_id Post ID.
 	 */
 	public static function column_content( $column, $post_id ) {
-		if ( 'ds_destinations' !== $column ) {
+		if ( 'STR_Countries' !== $column ) {
 			return;
 		}
-		$dests = DS_Destinations::for_product( $post_id );
+		$dests = STR_Countries::for_product( $post_id );
 		if ( empty( $dests ) ) {
-			echo '<span style="color:#8c8f94;">' . esc_html__( 'Everywhere', 'destination-shop' ) . '</span>';
+			echo '<span style="color:#8c8f94;">' . esc_html__( 'Everywhere', 'ship-to-rules' ) . '</span>';
 			return;
 		}
 		$flags = array();
@@ -282,8 +304,8 @@ class DS_Product_Admin {
 	 * @return array
 	 */
 	public static function bulk_actions( $actions ) {
-		$actions['ds_assign_destinations'] = __( 'Assign destinations', 'destination-shop' );
-		$actions['ds_clear_destinations']  = __( 'Clear destinations', 'destination-shop' );
+		$actions['str_assign_countries'] = __( 'Assign destinations', 'ship-to-rules' );
+		$actions['str_clear_countries']  = __( 'Clear destinations', 'ship-to-rules' );
 		return $actions;
 	}
 
@@ -296,29 +318,29 @@ class DS_Product_Admin {
 	 * @return string
 	 */
 	public static function handle_bulk( $redirect, $action, $post_ids ) {
-		if ( 'ds_clear_destinations' === $action ) {
+		if ( 'str_clear_countries' === $action ) {
 			foreach ( $post_ids as $id ) {
 				if ( current_user_can( 'edit_product', $id ) ) {
-					wp_set_object_terms( $id, array(), DS_TAXONOMY, false );
+					wp_set_object_terms( $id, array(), STR_TAXONOMY, false );
 				}
 			}
-			DS_Destinations::flush_cache();
-			return add_query_arg( 'ds_bulk', 'cleared', $redirect );
+			STR_Countries::flush_cache();
+			return add_query_arg( 'str_bulk', 'cleared', $redirect );
 		}
 
-		if ( 'ds_assign_destinations' === $action ) {
-			if ( ! isset( $_REQUEST['ds_bulk_destinations'] ) || ! is_array( $_REQUEST['ds_bulk_destinations'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-				return add_query_arg( 'ds_bulk', 'missing', $redirect );
+		if ( 'str_assign_countries' === $action ) {
+			if ( ! isset( $_REQUEST['str_bulk_countries'] ) || ! is_array( $_REQUEST['str_bulk_countries'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+				return add_query_arg( 'str_bulk', 'missing', $redirect );
 			}
-			$term_ids = array_map( 'absint', wp_unslash( $_REQUEST['ds_bulk_destinations'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$term_ids = array_map( 'absint', wp_unslash( $_REQUEST['str_bulk_countries'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			$term_ids = array_values( array_filter( $term_ids ) );
 			foreach ( $post_ids as $id ) {
 				if ( current_user_can( 'edit_product', $id ) ) {
-					wp_set_object_terms( $id, $term_ids, DS_TAXONOMY, true ); // append
+					wp_set_object_terms( $id, $term_ids, STR_TAXONOMY, true ); // append
 				}
 			}
-			DS_Destinations::flush_cache();
-			return add_query_arg( 'ds_bulk', 'assigned', $redirect );
+			STR_Countries::flush_cache();
+			return add_query_arg( 'str_bulk', 'assigned', $redirect );
 		}
 
 		return $redirect;
@@ -329,15 +351,15 @@ class DS_Product_Admin {
 	 */
 	public static function bulk_notice() {
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
-		if ( empty( $_REQUEST['ds_bulk'] ) ) {
+		if ( empty( $_REQUEST['str_bulk'] ) ) {
 			return;
 		}
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
-		$msg = sanitize_key( wp_unslash( $_REQUEST['ds_bulk'] ) );
+		$msg = sanitize_key( wp_unslash( $_REQUEST['str_bulk'] ) );
 		$map = array(
-			'assigned' => __( 'Destinations assigned to selected products.', 'destination-shop' ),
-			'cleared'  => __( 'Destinations cleared on selected products.', 'destination-shop' ),
-			'missing'  => __( 'Select at least one destination in the bulk panel, then apply again.', 'destination-shop' ),
+			'assigned' => __( 'Destinations assigned to selected products.', 'ship-to-rules' ),
+			'cleared'  => __( 'Destinations cleared on selected products.', 'ship-to-rules' ),
+			'missing'  => __( 'Select at least one destination in the bulk panel, then apply again.', 'ship-to-rules' ),
 		);
 		if ( ! isset( $map[ $msg ] ) ) {
 			return;
@@ -357,22 +379,22 @@ class DS_Product_Admin {
 			return;
 		}
 		$ok = in_array( $screen->id, array( 'product', 'edit-product' ), true )
-			|| ( isset( $screen->taxonomy ) && DS_TAXONOMY === $screen->taxonomy );
+			|| ( isset( $screen->taxonomy ) && STR_TAXONOMY === $screen->taxonomy );
 		if ( ! $ok ) {
 			return;
 		}
 
 		wp_enqueue_style(
-			'ds-admin',
-			DS_PLUGIN_URL . 'assets/css/admin.css',
+			'str-admin',
+			STR_PLUGIN_URL . 'assets/css/admin.css',
 			array( 'woocommerce_admin_styles' ),
-			DS_VERSION
+			STR_VERSION
 		);
 		wp_enqueue_script(
-			'ds-admin',
-			DS_PLUGIN_URL . 'assets/js/admin.js',
+			'str-admin',
+			STR_PLUGIN_URL . 'assets/js/admin.js',
 			array(),
-			DS_VERSION,
+			STR_VERSION,
 			true
 		);
 	}
@@ -385,22 +407,22 @@ class DS_Product_Admin {
 		if ( ! $screen || 'edit-product' !== $screen->id ) {
 			return;
 		}
-		$destinations = DS_Destinations::get_all( true, true );
+		$destinations = STR_Countries::get_all( true, true );
 		if ( empty( $destinations ) ) {
 			return;
 		}
 		?>
-		<div id="ds-bulk-destinations" class="ds-bulk-panel" hidden>
-			<strong><?php esc_html_e( 'Destinations to assign', 'destination-shop' ); ?></strong>
-			<div class="ds-bulk-list">
+		<div id="str-bulk-countries" class="str-bulk-panel" hidden>
+			<strong><?php esc_html_e( 'Destinations to assign', 'ship-to-rules' ); ?></strong>
+			<div class="str-bulk-list">
 				<?php foreach ( $destinations as $d ) : ?>
 					<label>
-						<input type="checkbox" name="ds_bulk_destinations[]" value="<?php echo esc_attr( $d->id ); ?>" form="posts-filter" />
+						<input type="checkbox" name="str_bulk_countries[]" value="<?php echo esc_attr( $d->id ); ?>" form="posts-filter" />
 						<?php echo esc_html( ( $d->flag ? $d->flag . ' ' : '' ) . $d->name ); ?>
 					</label>
 				<?php endforeach; ?>
 			</div>
-			<p class="description"><?php esc_html_e( 'Checked destinations are appended when you use “Assign destinations”.', 'destination-shop' ); ?></p>
+			<p class="description"><?php esc_html_e( 'Checked destinations are appended when you use “Assign destinations”.', 'ship-to-rules' ); ?></p>
 		</div>
 		<?php
 	}

@@ -1,82 +1,89 @@
-# Destination Shop for WooCommerce
+# Ship-To Rules for WooCommerce
 
-Browse your catalog by **shipping destination** — clear availability, not geo-blocking.
-
-Customers pick where they want products delivered. You mark which products ship where. The shop filters (or badges) accordingly, and each product page shows an **Availability Passport** with destination chips and live status.
-
-## Who it's for
-
-- Stores that ship different SKUs to different countries
-- Gift / international shoppers who choose a destination first
-- Merchants who want transparency instead of hiding the catalog by IP
-
-## Features
-
-- **Destinations** taxonomy under Products (ISO2 codes + flags + active flag)
-- Assign destinations per product (searchable checklist)
-- Products list column + bulk assign / clear
-- **Destination Bar** shortcode with searchable combobox, flags, loading state
-- Catalog modes: **Filter** or **Badge**
-- **Availability Passport** on product pages
-- Loop badges when a destination is selected
-- One-time migration from older `product_country` CPT + `csb_product_countries` meta (upgrade only)
-- Lightweight: `tax_query` (no serialized meta LIKE), conditional assets, destination list transient
+**Prevent orders that cannot be fulfilled.** WooCommerce core has no way to express “this product cannot ship to country X”. Ship-To Rules adds product-level shipping countries and enforces them at cart and checkout — based on the **real shipping address**, not geo-blocking by IP.
 
 ## Requirements
 
 - WordPress 5.8+
-- WooCommerce 7.0+
+- WooCommerce 7.0+ (tested with 11.0)
 - PHP 7.4+
+
+## Install / reinstall
+
+1. **Deactivate** the old plugin if active (`wp-country-search` or any previous copy).
+2. **Delete** the old folder: `wp-content/plugins/wp-country-search/` (if it still exists).
+3. Place this plugin at: `wp-content/plugins/ship-to-rules/`
+4. Main file must be: `ship-to-rules/ship-to-rules.php`
+5. **Activate** “Ship-To Rules for WooCommerce” in WordPress → Plugins.
+6. On first activation, migration runs automatically and imports data from a previous install (taxonomy, settings, product rules, widgets).
+
+If you had shortcodes or theme code from the old plugin, update them:
+
+| Old | New |
+|-----|-----|
+| `[destination_context]` | `[ship_to_context]` |
+| `[destination_shop_picker]` | `[ship_to_picker]` |
+| `[destination_passport]` | `[ship_to_notice]` |
+| `ds_get_destination_*()` | `str_get_ship_to_*()` |
 
 ## Setup
 
-1. Activate the plugin (WooCommerce must be active).
-2. Go to **Products → Destinations** and add countries (set ISO2 for flags, e.g. `AR`, `DE`, `JP`).
-3. Edit products → tab **Destinations** → check where each product ships.  
-   Leave empty = available everywhere.
-4. Place the bar:
+1. Go to **WooCommerce → Ship-To Rules** and click **Seed from shipping zones**.
+2. Review **Products → Ship-To Countries** — every country needs a valid **ISO2** code.
+3. Edit products → tab **Ship-To** → select countries and choose rule mode.
+4. Shoppers select a country via the context strip; rules enforce at checkout.
 
-```
-[destination_shop_bar]
-```
+## Shortcodes & PHP helpers
 
-PHP: `echo ds_get_destination_bar();`
+| Shortcode | PHP helper | Purpose |
+|-----------|------------|---------|
+| `[ship_to_context]` | `str_get_ship_to_context()` | Ship-to context strip with country selector |
+| `[ship_to_picker]` | `str_get_ship_to_picker()` | Compact country picker |
+| `[ship_to_notice]` | `str_get_ship_to_notice( $product_id )` | Product shipping availability notice |
 
-5. Configure **WooCommerce → Destination Shop** (catalog mode, results URL, passport/badges, empty message).
+## Naming convention
 
-## Shortcodes
+Everything uses the `str_` / `STR_` prefix (Ship-To Rules):
 
-| Shortcode | Purpose |
-|-----------|---------|
-| `[destination_shop_bar]` | Destination + product search bar |
-| `[destination_passport]` | Passport block (usually auto on product pages) |
-
-## How filtering works
-
-Query var / cookie: `ds_destination={slug}`
-
-In **Filter** mode, the product query includes:
-
-- products assigned to that destination, **or**
-- products with no destinations (treated as ship-everywhere)
-
-In **Badge** mode the catalog stays complete; cards and the passport show availability.
+| Item | Value |
+|------|-------|
+| Plugin folder | `ship-to-rules` |
+| Bootstrap file | `ship-to-rules.php` |
+| Text domain | `ship-to-rules` |
+| Taxonomy | `str_ship_to` |
+| Cookie / query var | `str_ship_to` |
+| Settings option | `str_settings` |
+| Widget ID | `str_ship_to_picker` |
 
 ## Architecture
 
 ```
-wp-country-search.php          Bootstrap
-includes/class-ds-*.php        Taxonomy, migration, admin, query, frontend, settings
-templates/                     Destination bar + passport
-assets/css|js                  Front & admin (enqueued only when needed)
+ship-to-rules.php
+includes/
+  class-str-countries.php     Country data + ISO map + cookie
+  class-str-rules.php         Rule engine (product × country)
+  class-str-enforcement.php   Cart/checkout validation
+  class-str-audit.php         Admin shipping audit
+  class-str-seeder.php        Country seeding
+  class-str-frontend.php      Shopper UI
+  class-str-query.php         Optional catalog filter
+  class-str-migration.php     Upgrade from legacy installs
+templates/
+  ship-to-context.php
+  ship-to-picker.php
+  country-combobox.php
+  product-shipping-notice.php
+  cart-blocked-items.php
+tests/
+  RulesTest.php
 ```
 
-## Security & performance notes
+## Development
 
-- Nonces + capability checks on product/term saves
-- Escaping on all front output; ISO sanitized to 2 letters
-- No per-page geolocation API calls
-- Destination list cached in a transient
+```bash
+composer install
+composer test
+```
 
 ## License
 
