@@ -207,6 +207,21 @@ class STR_Settings {
 			);
 			echo '</p></div>';
 		}
+
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		if ( ! empty( $_GET['str_reset'] ) ) {
+			// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$deleted = isset( $_GET['str_deleted'] ) ? absint( $_GET['str_deleted'] ) : 0;
+			echo '<div class="notice notice-success is-dismissible"><p>';
+			echo esc_html(
+				sprintf(
+					/* translators: %d: number of deleted destination terms */
+					__( 'All ship-to destinations cleared. %d term(s) removed.', 'ship-to-rules' ),
+					$deleted
+				)
+			);
+			echo '</p></div>';
+		}
 		?>
 		<div class="wrap str-settings">
 			<h1><?php esc_html_e( 'Ship-To Rules', 'ship-to-rules' ); ?></h1>
@@ -275,14 +290,17 @@ class STR_Settings {
 			</form>
 
 			<hr />
-			<h2><?php esc_html_e( 'Seed destinations', 'ship-to-rules' ); ?></h2>
-			<p><?php esc_html_e( 'Create destination terms from your existing WooCommerce configuration instead of typing countries manually.', 'ship-to-rules' ); ?></p>
+			<h2><?php esc_html_e( 'Destinations', 'ship-to-rules' ); ?></h2>
+			<p><?php esc_html_e( 'Create destination terms from your WooCommerce configuration, or clear them to start over. Seeding only adds or updates countries — it does not remove extras created by a previous seed.', 'ship-to-rules' ); ?></p>
 			<p>
 				<a class="button button-secondary" href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=str_seed_countries&source=zones' ), 'str_seed_countries' ) ); ?>">
 					<?php esc_html_e( 'Seed from shipping zones', 'ship-to-rules' ); ?>
 				</a>
 				<a class="button button-secondary" href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=str_seed_countries&source=all' ), 'str_seed_countries' ) ); ?>">
 					<?php esc_html_e( 'Seed all WooCommerce countries', 'ship-to-rules' ); ?>
+				</a>
+				<a class="button button-link-delete" href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=str_reset_countries' ), 'str_reset_countries' ) ); ?>" onclick="return confirm('<?php echo esc_js( __( 'Remove all ship-to destination countries and clear product assignments? This cannot be undone.', 'ship-to-rules' ) ); ?>');">
+					<?php esc_html_e( 'Clear all destinations', 'ship-to-rules' ); ?>
 				</a>
 			</p>
 

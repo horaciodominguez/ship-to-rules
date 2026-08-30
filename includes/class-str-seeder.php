@@ -17,6 +17,7 @@ class STR_Seeder {
 	 */
 	public static function init() {
 		add_action( 'admin_post_str_seed_countries', array( __CLASS__, 'handle_seed_request' ) );
+		add_action( 'admin_post_str_reset_countries', array( __CLASS__, 'handle_reset_request' ) );
 	}
 
 	/**
@@ -50,6 +51,66 @@ class STR_Seeder {
 
 		wp_safe_redirect( $redirect );
 		exit;
+	}
+
+	/**
+	 * Handle admin reset action — remove all destination terms.
+	 */
+	public static function handle_reset_request() {
+		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+			wp_die( esc_html__( 'Unauthorized', 'ship-to-rules' ) );
+		}
+
+		check_admin_referer( 'str_reset_countries' );
+
+		$result = self::reset_all_destinations();
+
+		$redirect = add_query_arg(
+			array(
+				'page'         => STR_ADMIN_PAGE,
+				'str_reset'    => 1,
+				'str_deleted'  => (int) $result['deleted'],
+			),
+			admin_url( 'admin.php' )
+		);
+
+		wp_safe_redirect( $redirect );
+		exit;
+	}
+
+	/**
+	 * Delete every ship-to destination term and clear product assignments.
+	 *
+	 * @return array{deleted:int}
+	 */
+	public static function reset_all_destinations() {
+		$term_ids = get_terms(
+			array(
+				'taxonomy'   => STR_TAXONOMY,
+				'hide_empty' => false,
+				'fields'     => 'ids',
+			)
+		);
+
+		if ( is_wp_error( $term_ids ) ) {
+			$term_ids = array();
+		}
+
+		$deleted = 0;
+		foreach ( $term_ids as $term_id ) {
+			$result = wp_delete_term( (int) $term_id, STR_TAXONOMY );
+			if ( ! is_wp_error( $result ) && false !== $result ) {
+				++$deleted;
+			}
+		}
+
+		delete_metadata( 'post', 0, '_str_ship_to_ids', '', true );
+
+		STR_Countries::flush_cache();
+
+		return array(
+			'deleted' => $deleted,
+		);
 	}
 
 	/**
@@ -194,17 +255,9 @@ class STR_Seeder {
 			return array();
 		}
 
-		$map       = array();
-		$countries = WC()->countries->get_countries();
-
-		foreach ( array_keys( WC()->countries->get_continents() ) as $continent_code ) {
-			$map[ $continent_code ] = array();
-			foreach ( $countries as $code => $name ) {
-				unset( $name );
-				if ( wc_get_continent_code_for_country( $code ) === $continent_code ) {
-					$map[ $continent_code ][] = $code;
-				}
-			}
+		$map = array();
+		foreach ( WC()->countries->get_continents() as $continent_code => $continent ) {
+			$map[ $continent_code ] = isset( $continent['countries'] ) ? $continent['countries'] : array();
 		}
 
 		return $map;
