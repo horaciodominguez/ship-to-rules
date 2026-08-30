@@ -53,7 +53,7 @@ $instant  = ! empty( $instant );
 		<ul class="str-combobox__list" role="listbox" data-str-combobox-list>
 			<li role="option" data-value="" data-name="<?php echo esc_attr__( 'All destinations', 'ship-to-rules' ); ?>" data-flag="🌐" <?php echo ! $current ? 'aria-selected="true"' : ''; ?>>
 				<span class="str-combobox__flag" aria-hidden="true">🌐</span>
-				<span><?php esc_html_e( 'All destinations', 'ship-to-rules' ); ?></span>
+				<span class="str-combobox__option-name"><?php esc_html_e( 'All destinations', 'ship-to-rules' ); ?></span>
 			</li>
 			<?php if ( empty( $destinations ) ) : ?>
 				<li class="str-combobox__empty" role="presentation">
@@ -69,9 +69,9 @@ $instant  = ! empty( $instant );
 						<?php echo ( $current && (int) $current->id === (int) $d->id ) ? 'aria-selected="true"' : ''; ?>
 					>
 						<span class="str-combobox__flag" aria-hidden="true"><?php echo esc_html( $d->flag ? $d->flag : '•' ); ?></span>
-						<span><?php echo esc_html( $d->name ); ?></span>
+						<span class="str-combobox__option-name"><?php echo esc_html( $d->name ); ?></span>
 						<?php if ( $d->iso2 ) : ?>
-							<code><?php echo esc_html( $d->iso2 ); ?></code>
+							<span class="str-combobox__iso"><?php echo esc_html( $d->iso2 ); ?></span>
 						<?php endif; ?>
 					</li>
 				<?php endforeach; ?>

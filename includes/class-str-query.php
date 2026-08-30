@@ -190,7 +190,7 @@ class STR_Query {
 		}
 		$tpl = STR_Settings::get( 'empty_message' );
 		$msg = str_replace( '{country}', $dest->name, $tpl );
-		$shop = esc_url( remove_query_arg( STR_QUERY_VAR, STR_Countries::results_url() ) );
+		$shop = esc_url( add_query_arg( STR_QUERY_VAR, '', remove_query_arg( STR_QUERY_VAR, STR_Countries::results_url() ) ) );
 
 		ob_start();
 		?>

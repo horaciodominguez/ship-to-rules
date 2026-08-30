@@ -28,6 +28,7 @@ class STR_Settings {
 			'show_loop_badge'         => '1',
 			'show_ship_to_context' => '1',
 			'empty_message'           => __( 'No products ship to {country} yet.', 'ship-to-rules' ),
+			'frontend_theme'          => 'light',
 		);
 	}
 
@@ -176,6 +177,10 @@ class STR_Settings {
 		$out['empty_message']            = isset( $input['empty_message'] )
 			? sanitize_text_field( $input['empty_message'] )
 			: $out['empty_message'];
+		$allowed_themes                  = array( 'light', 'dark', 'minimal' );
+		$out['frontend_theme']           = ( isset( $input['frontend_theme'] ) && in_array( $input['frontend_theme'], $allowed_themes, true ) )
+			? $input['frontend_theme']
+			: 'light';
 
 		return $out;
 	}
@@ -191,20 +196,47 @@ class STR_Settings {
 		$s = self::all();
 
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		if ( ! empty( $_GET['str_seed_error'] ) ) {
+			// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$error = sanitize_key( wp_unslash( $_GET['str_seed_error'] ) );
+			echo '<div class="notice notice-error is-dismissible"><p>';
+			if ( 'no_zones' === $error ) {
+				esc_html_e( 'Could not seed from shipping zones: no shipping zones with countries were found. Add zones under WooCommerce → Settings → Shipping, assign countries to each zone, and enable at least one shipping method.', 'ship-to-rules' );
+			} else {
+				esc_html_e( 'Destination seed failed. Please try again.', 'ship-to-rules' );
+			}
+			echo '</p></div>';
+		}
+
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		if ( ! empty( $_GET['str_seeded'] ) ) {
 			// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			$created = isset( $_GET['str_created'] ) ? absint( $_GET['str_created'] ) : 0;
 			// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			$skipped = isset( $_GET['str_skipped'] ) ? absint( $_GET['str_skipped'] ) : 0;
+			// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$removed = isset( $_GET['str_removed'] ) ? absint( $_GET['str_removed'] ) : 0;
 			echo '<div class="notice notice-success is-dismissible"><p>';
-			echo esc_html(
-				sprintf(
-					/* translators: 1: created count, 2: skipped count */
-					__( 'Destinations seeded: %1$d created, %2$d already existed.', 'ship-to-rules' ),
-					$created,
-					$skipped
-				)
-			);
+			if ( $removed > 0 ) {
+				echo esc_html(
+					sprintf(
+						/* translators: 1: created count, 2: skipped count, 3: removed count */
+						__( 'Destinations synced from shipping zones: %1$d created, %2$d unchanged, %3$d removed.', 'ship-to-rules' ),
+						$created,
+						$skipped,
+						$removed
+					)
+				);
+			} else {
+				echo esc_html(
+					sprintf(
+						/* translators: 1: created count, 2: skipped count */
+						__( 'Destinations seeded: %1$d created, %2$d already existed.', 'ship-to-rules' ),
+						$created,
+						$skipped
+					)
+				);
+			}
 			echo '</p></div>';
 		}
 
@@ -240,6 +272,26 @@ class STR_Settings {
 								<input type="checkbox" name="<?php echo esc_attr( self::OPTION ); ?>[narrow_checkout_countries]" value="1" <?php checked( $s['narrow_checkout_countries'], '1' ); ?> />
 								<?php esc_html_e( 'Narrow checkout country list to cart-compatible destinations (UX only; server validation remains active)', 'ship-to-rules' ); ?>
 							</label>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><?php esc_html_e( 'Appearance', 'ship-to-rules' ); ?></th>
+						<td>
+							<fieldset>
+								<legend class="screen-reader-text"><?php esc_html_e( 'Frontend appearance', 'ship-to-rules' ); ?></legend>
+								<label>
+									<input type="radio" name="<?php echo esc_attr( self::OPTION ); ?>[frontend_theme]" value="light" <?php checked( $s['frontend_theme'], 'light' ); ?> />
+									<?php esc_html_e( 'Simple Light — clean light background with defined contrast', 'ship-to-rules' ); ?>
+								</label><br />
+								<label>
+									<input type="radio" name="<?php echo esc_attr( self::OPTION ); ?>[frontend_theme]" value="dark" <?php checked( $s['frontend_theme'], 'dark' ); ?> />
+									<?php esc_html_e( 'Simple Dark — dark surfaces with soft accents', 'ship-to-rules' ); ?>
+								</label><br />
+								<label>
+									<input type="radio" name="<?php echo esc_attr( self::OPTION ); ?>[frontend_theme]" value="minimal" <?php checked( $s['frontend_theme'], 'minimal' ); ?> />
+									<?php esc_html_e( 'Simple Minimal — blends with your active theme', 'ship-to-rules' ); ?>
+								</label>
+							</fieldset>
 						</td>
 					</tr>
 					<tr>
@@ -291,7 +343,7 @@ class STR_Settings {
 
 			<hr />
 			<h2><?php esc_html_e( 'Destinations', 'ship-to-rules' ); ?></h2>
-			<p><?php esc_html_e( 'Create destination terms from your WooCommerce configuration, or clear them to start over. Seeding only adds or updates countries — it does not remove extras created by a previous seed.', 'ship-to-rules' ); ?></p>
+			<p><?php esc_html_e( 'Create destination terms from your WooCommerce configuration, or clear them to start over. “Seed from shipping zones” syncs the list to your zone countries and removes extras. “Seed all” adds every WooCommerce country and does not remove existing terms.', 'ship-to-rules' ); ?></p>
 			<p>
 				<a class="button button-secondary" href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=str_seed_countries&source=zones' ), 'str_seed_countries' ) ); ?>">
 					<?php esc_html_e( 'Seed from shipping zones', 'ship-to-rules' ); ?>

@@ -10,7 +10,7 @@
     if (slug) {
       url.searchParams.set(STR_VARS.queryVar, slug);
     } else {
-      url.searchParams.delete(STR_VARS.queryVar);
+      url.searchParams.set(STR_VARS.queryVar, '');
     }
     window.location.href = url.toString();
   }
@@ -31,6 +31,10 @@
       root.classList.add('is-open');
       panel.hidden = false;
       toggle.setAttribute('aria-expanded', 'true');
+      var host = root.closest('.str-context, .str-picker, .str-hint, .str-bar');
+      if (host) {
+        host.classList.add('str-has-open-combobox');
+      }
       if (search) {
         search.value = '';
         filter('');
@@ -42,6 +46,10 @@
       root.classList.remove('is-open');
       panel.hidden = true;
       toggle.setAttribute('aria-expanded', 'false');
+      var host = root.closest('.str-context, .str-picker, .str-hint, .str-bar');
+      if (host) {
+        host.classList.remove('str-has-open-combobox');
+      }
     }
 
     function filter(q) {
@@ -77,9 +85,21 @@
       toggle.focus();
     }
 
-    toggle.addEventListener('click', function () {
-      if (panel.hidden) open();
-      else close();
+    // Force closed on init — theme CSS often overrides [hidden] when panel uses display:flex.
+    close();
+
+    toggle.addEventListener('click', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      if (root.classList.contains('is-open')) {
+        close();
+      } else {
+        open();
+      }
+    });
+
+    panel.addEventListener('click', function (e) {
+      e.stopPropagation();
     });
 
     if (search) {
@@ -101,7 +121,16 @@
     });
 
     document.addEventListener('click', function (e) {
-      if (!root.contains(e.target)) close();
+      if (!root.contains(e.target)) {
+        close();
+      }
+    });
+
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && root.classList.contains('is-open')) {
+        close();
+        toggle.focus();
+      }
     });
 
     toggle.addEventListener('keydown', function (e) {
@@ -114,6 +143,12 @@
 
   function init() {
     document.querySelectorAll('[data-str-combobox]').forEach(initCombobox);
+    document.querySelectorAll('[data-str-clear]').forEach(function (link) {
+      link.addEventListener('click', function (e) {
+        e.preventDefault();
+        navigateToDestination('');
+      });
+    });
   }
 
   if (document.readyState === 'loading') {

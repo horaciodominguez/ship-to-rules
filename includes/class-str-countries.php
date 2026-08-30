@@ -163,9 +163,12 @@ class STR_Countries {
 	 */
 	public static function current() {
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
-		if ( isset( $_GET[ STR_QUERY_VAR ] ) && '' !== $_GET[ STR_QUERY_VAR ] ) {
+		if ( isset( $_GET[ STR_QUERY_VAR ] ) ) {
 			// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			$ref = sanitize_title( wp_unslash( $_GET[ STR_QUERY_VAR ] ) );
+			if ( '' === $ref ) {
+				return null;
+			}
 			$dest = self::get( $ref );
 			if ( $dest ) {
 				return $dest;
@@ -214,6 +217,15 @@ class STR_Countries {
 		}
 		setcookie( STR_COOKIE, '', time() - YEAR_IN_SECONDS, COOKIEPATH ? COOKIEPATH : '/', COOKIE_DOMAIN, is_ssl(), true );
 		unset( $_COOKIE[ STR_COOKIE ] );
+	}
+
+	/**
+	 * URL that clears the visitor destination (GET + cookie).
+	 *
+	 * @return string
+	 */
+	public static function clear_url() {
+		return add_query_arg( STR_QUERY_VAR, '', remove_query_arg( STR_QUERY_VAR ) );
 	}
 
 	/**

@@ -25,11 +25,11 @@
 
 | Action | What it does |
 |--------|----------------|
-| **Seed from shipping zones** | Creates or updates terms for countries covered by zones with enabled shipping methods |
-| **Seed all WooCommerce countries** | Creates or updates terms for every country WooCommerce knows |
+| **Seed from shipping zones** | Syncs terms to countries in your shipping zones (removes extras from a prior full seed). Requires zones with countries and an enabled method — otherwise shows an error. |
+| **Seed all WooCommerce countries** | Creates or updates terms for every country WooCommerce knows (does not remove existing terms) |
 | **Clear all destinations** | Removes all ship-to terms and clears product country assignments |
 
-Seeding only **adds or updates** countries. If you seeded all countries by mistake, use **Clear all destinations** first, then seed again from zones.
+Seeding from zones **syncs** the destination list. If you seeded all countries by mistake, use **Seed from shipping zones** to trim back — or **Clear all destinations** first, then seed again.
 
 ## Settings
 

@@ -141,6 +141,25 @@ class STR_Frontend {
 	}
 
 	/**
+	 * Active frontend theme slug.
+	 *
+	 * @return string light|dark|minimal
+	 */
+	public static function theme() {
+		$theme = STR_Settings::get( 'frontend_theme' );
+		return in_array( $theme, array( 'light', 'dark', 'minimal' ), true ) ? $theme : 'light';
+	}
+
+	/**
+	 * HTML attribute for theme on component wrappers.
+	 *
+	 * @return string
+	 */
+	public static function theme_attr() {
+		return 'data-str-theme="' . esc_attr( self::theme() ) . '"';
+	}
+
+	/**
 	 * Shortcode: product shipping notice.
 	 *
 	 * @param array $atts Attributes.
@@ -313,8 +332,9 @@ class STR_Frontend {
 				$current->name
 			);
 		printf(
-			'<div class="str-loop-badge %1$s" role="status"><span class="str-loop-badge__flag" aria-hidden="true">%2$s</span> %3$s</div>',
+			'<div class="str-loop-badge %1$s" %2$s role="status"><span class="str-loop-badge__flag" aria-hidden="true">%3$s</span> %4$s</div>',
 			esc_attr( $class ),
+			self::theme_attr(), // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 			esc_html( $current->flag ),
 			esc_html( $text )
 		);

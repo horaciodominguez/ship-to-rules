@@ -13,7 +13,7 @@
 
 defined( 'ABSPATH' ) || exit;
 ?>
-<section class="str-shipping-notice" aria-label="<?php esc_attr_e( 'Shipping availability', 'ship-to-rules' ); ?>">
+<section class="str-shipping-notice" <?php echo STR_Frontend::theme_attr(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?> aria-label="<?php esc_attr_e( 'Shipping availability', 'ship-to-rules' ); ?>">
 	<?php if ( empty( $destinations ) ) : ?>
 		<p class="str-shipping-notice__everywhere">
 			<?php esc_html_e( 'This product ships worldwide.', 'ship-to-rules' ); ?>
